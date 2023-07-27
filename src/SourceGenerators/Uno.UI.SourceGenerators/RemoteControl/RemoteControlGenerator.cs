@@ -87,7 +87,7 @@ namespace Uno.UI.SourceGenerators.RemoteControl
 			}
 		}
 
-		private static bool IsInsideUnoSolution(GeneratorExecutionContext context) 
+		private static bool IsInsideUnoSolution(GeneratorExecutionContext context)
 			=> context.GetMSBuildPropertyValue("_IsUnoUISolution") == "true";
 
 		private static void BuildGeneratedFileHeader(IndentedStringBuilder sb)

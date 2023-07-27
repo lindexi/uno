@@ -45,7 +45,7 @@ namespace Uno.UI.RemoteControl.HotReload
 			}
 		}
 
-		private void WorkspaceLoadResult(HotReloadWorkspaceLoadResult hotReloadWorkspaceLoadResult) 
+		private void WorkspaceLoadResult(HotReloadWorkspaceLoadResult hotReloadWorkspaceLoadResult)
 			=> _hotreloadWorkloadSpaceLoaded.SetResult(hotReloadWorkspaceLoadResult.WorkspaceInitialized);
 
 		/// <summary>
