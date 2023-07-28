@@ -11,7 +11,7 @@
 		
 		<!-- CI runtime test job -->
 		<_UnoBaseReferenceBinPath Condition="exists('../../build/skia-wpf-samples-app')">../../build/skia-wpf-samples-app</_UnoBaseReferenceBinPath>
-		<_UnoBaseReferencePath Condition="exists('../../build/skia-wpf-samples-app')">../..</_UnoBaseReferencePath>
+		<_UnoBaseReferencePath Condition="exists('../../build/skia-wpf-samples-app')">../../src</_UnoBaseReferencePath>
 
 		<UnoUIRuntimeTestEngine_DisableValidateUno>true</UnoUIRuntimeTestEngine_DisableValidateUno>
 	</PropertyGroup>
