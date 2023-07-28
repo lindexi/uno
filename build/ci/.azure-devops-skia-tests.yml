@@ -156,6 +156,10 @@ jobs:
         dotnet SamplesApp.Skia.Gtk.dll --runtime-tests=$(build.sourcesdirectory)/build/skia-gtk-runtime-tests-results.xml
 
     displayName: Run Skia GTK Runtime Tests
+    env:
+      UnoEnableHRuntimeTests: $(UnoEnableHRuntimeTests)
+      SamplesAppArtifactPath: $(SamplesAppArtifactPath)
+      SamplesAppArtifactName: $(SamplesAppArtifactName)
 
   - task: PublishTestResults@2
     condition: always()
