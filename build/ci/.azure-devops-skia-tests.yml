@@ -129,7 +129,7 @@ jobs:
 
   dependsOn: Skia_Tests_Build
 
-  env:
+  variables:
     SamplesAppArtifactName: skia-gtk-samples-app
     SamplesAppArtifactPath: $(build.sourcesdirectory)/build/$(SamplesAppArtifactName)
     UnoEnableHRuntimeTests: true
@@ -178,7 +178,7 @@ jobs:
 
   dependsOn: Skia_Tests_Build
 
-  env:
+  variables:
     SamplesAppArtifactName: skia-wpf-samples-app
     SamplesAppArtifactPath: $(build.sourcesdirectory)/build/$(SamplesAppArtifactName)
 
@@ -213,7 +213,7 @@ jobs:
 
   dependsOn: Skia_Tests_Build
 
-  env:
+  variables:
     SamplesAppArtifactName: skia-wpf-samples-app
     SamplesAppArtifactPath: $(build.sourcesdirectory)/build/$(SamplesAppArtifactName)
 
@@ -256,7 +256,7 @@ jobs:
 
   dependsOn: Skia_Tests_Build
 
-  env:
+  variables:
     SamplesAppArtifactName: uno-islands-skia-wpf-samples-app
     SamplesAppArtifactPath: $(build.sourcesdirectory)/build/$(SamplesAppArtifactName)
 
