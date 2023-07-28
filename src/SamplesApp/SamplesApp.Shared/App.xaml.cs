@@ -466,6 +466,7 @@ namespace SamplesApp
 
 				// RemoteControl and HotReload related
 				builder.AddFilter("Uno.UI.RemoteControl", LogLevel.Information);
+				builder.AddFilter("Uno.UI.RuntimeTests.Tests.HotReload.Given_HotReloadWorkspace", LogLevel.Debug);
 
 				// Display Skia related information
 				builder.AddFilter("Uno.UI.Runtime.Skia", LogLevel.Debug);
