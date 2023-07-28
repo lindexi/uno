@@ -260,9 +260,7 @@ internal class Given_HotReloadWorkspace
 
 		var searchPaths = new[] {
 			Path.Combine(basePath, "..", "..", "..", "..", "..", "Uno.UI.RuntimeTests", "Tests", "HotReload", "Frame", "HRApp"),
-
-			// /Users/runner/work/1/s/build/skia-gtk-samples-app/../../../../../Uno.UI.RuntimeTests/Tests/HotReload/Frame/HRApp
-			Path.Combine(basePath, "..", "..", "Uno.UI.RuntimeTests", "Tests", "HotReload", "Frame", "HRApp"),
+			Path.Combine(basePath, "..", "..", "src", "Uno.UI.RuntimeTests", "Tests", "HotReload", "Frame", "HRApp"),
 		};
 
 		var hrAppPath = searchPaths
