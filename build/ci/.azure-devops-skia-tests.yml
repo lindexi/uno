@@ -182,7 +182,7 @@ jobs:
   - script: |
       # Build source generators for hot reload runtime tests
       cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
-      dotnet build
+      dotnet build -c Release
     displayName: Build Source Generators
 
   - script: |
@@ -219,7 +219,7 @@ jobs:
   - script: |
       # Build source generators for hot reload runtime tests
       cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
-      dotnet build
+      dotnet build -c Release
     displayName: Build Source Generators
 
   - script: |
@@ -252,6 +252,12 @@ jobs:
         downloadPath: '$(build.sourcesdirectory)/build'
 
   - template: templates/dotnet-install.yml
+
+  - script: |
+      # Build source generators for hot reload runtime tests
+      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
+      dotnet build -c Release
+    displayName: Build Source Generators
 
   - script: |
         cd $(build.sourcesdirectory)/build/uno-islands-skia-wpf-samples-app
