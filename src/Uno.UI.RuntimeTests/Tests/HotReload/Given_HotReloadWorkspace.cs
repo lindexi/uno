@@ -35,6 +35,11 @@ internal class Given_HotReloadWorkspace
 	[TestInitialize]
 	public async Task Initialize()
 	{
+		if(Environment.GetEnvironmentVariable("UnoEnableHRuntimeTests") != "true")
+		{
+			Assert.Inconclusive($"HotReload workspace test are not enabled for this platform (UnoEnableHRuntimeTests env var is not defined)");
+		}
+
 		await InitializeServer();
 		await BuildTestApp();
 	}

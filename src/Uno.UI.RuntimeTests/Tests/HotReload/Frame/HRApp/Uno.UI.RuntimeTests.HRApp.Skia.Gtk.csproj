@@ -6,15 +6,17 @@
 		<Nullable>enable</Nullable>
 
 		<!-- in-solution build -->
-		<_UnoBaseReferenceBinPath Condition="exists('../../../../../SamplesApp')">../../../../../SamplesApp/SamplesApp.Skia.Gtk/bin/$(Configuration)/$(TargetFramework)</_UnoBaseReferenceBinPath>
-		<_UnoBaseReferencePath Condition="exists('../../../../../SamplesApp')">../../../../..</_UnoBaseReferencePath>
+		<_UnoBaseReferenceBinPath Condition="exists('$(MSBuildThisFileDirectory)../../../../../SamplesApp')">$(MSBuildThisFileDirectory)../../../../../SamplesApp/SamplesApp.Skia.Gtk/bin/$(Configuration)/$(TargetFramework)</_UnoBaseReferenceBinPath>
 		
 		<!-- CI runtime test job -->
-		<_UnoBaseReferenceBinPath Condition="exists('../../build/skia-wpf-samples-app')">../../build/skia-wpf-samples-app</_UnoBaseReferenceBinPath>
-		<_UnoBaseReferencePath Condition="exists('../../build/skia-wpf-samples-app')">../../src</_UnoBaseReferencePath>
+		<_UnoBaseReferenceBinPath Condition="exists('$(SamplesAppArtifactPath)')">$(SamplesAppArtifactPath)</_UnoBaseReferenceBinPath>
 
 		<UnoUIRuntimeTestEngine_DisableValidateUno>true</UnoUIRuntimeTestEngine_DisableValidateUno>
 	</PropertyGroup>
+
+	<Target Name="DisplayBasePath" BeforeTargets="BeforeBuild">
+		<Message Text="_UnoBaseReferenceBinPath: $(_UnoBaseReferenceBinPath)" Importance="high" />
+	</Target>
 
 	<ItemGroup>
 		<UnoReferenceExclusion Include="$(_UnoBaseReferenceBinPath)/SamplesApp*.dll"/>
@@ -48,9 +50,9 @@
 	</ItemGroup>
 
 	
-	<Import Project="$(_UnoBaseReferencePath)/../build/nuget/*.Skia.Gtk.props" />
-	<Import Project="$(_UnoBaseReferencePath)/../build/nuget/*.Skia.Gtk.targets" />
-	<Import Project="$(_UnoBaseReferencePath)/../build/nuget/uno.winui.runtime-replace.targets" />
-	<Import Project="$(_UnoBaseReferencePath)/SourceGenerators/sourcegenerators.local.props" />
+	<Import Project="$(MSBuildThisFileDirectory)../../../../../../build/nuget/*.Skia.Gtk.props" />
+	<Import Project="$(MSBuildThisFileDirectory)../../../../../../build/nuget/*.Skia.Gtk.targets" />
+	<Import Project="$(MSBuildThisFileDirectory)../../../../../../build/nuget/uno.winui.runtime-replace.targets" />
+	<Import Project="$(MSBuildThisFileDirectory)../../../../../SourceGenerators/sourcegenerators.local.props" />
 
 </Project>
