@@ -183,6 +183,8 @@ jobs:
       # Build source generators for hot reload runtime tests
       cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
       dotnet build -c Release
+      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.SourceGenerators
+      dotnet build -c Release
     displayName: Build Source Generators
 
   - script: |
@@ -220,6 +222,8 @@ jobs:
       # Build source generators for hot reload runtime tests
       cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
       dotnet build -c Release
+      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.SourceGenerators
+      dotnet build -c Release
     displayName: Build Source Generators
 
   - script: |
@@ -256,6 +260,8 @@ jobs:
   - script: |
       # Build source generators for hot reload runtime tests
       cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
+      dotnet build -c Release
+      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.SourceGenerators
       dotnet build -c Release
     displayName: Build Source Generators
 
