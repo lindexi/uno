@@ -24,7 +24,7 @@ internal static class HotReloadHelper
 
 		await RemoteControlClient.Instance.WaitForConnection();
 
-		var message = new T().CreateHotReloadMessage(
+		var message = new T().CreateUpdateFileMessage(
 			originalText: originalText,
 			replacementText: replacementText);
 

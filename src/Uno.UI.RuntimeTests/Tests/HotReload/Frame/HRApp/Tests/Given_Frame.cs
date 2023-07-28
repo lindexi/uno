@@ -41,7 +41,7 @@ namespace Uno.UI.RuntimeTests.Tests.HotReload.Frame.HRApp.Tests
 
 			frame.Navigate(typeof(HR_Frame_Pages_Page1));
 
-			var message = new HR_Frame_Pages_Page1().CreateHotReloadMessage(
+			var message = new HR_Frame_Pages_Page1().CreateUpdateFileMessage(
 				originalText: FirstPageTextBlockOriginalText,
 				replacementText: FirstPageTextBlockChangedText);
 

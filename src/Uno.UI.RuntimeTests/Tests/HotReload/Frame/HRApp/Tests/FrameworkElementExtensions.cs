@@ -54,13 +54,13 @@ namespace Uno.UI.RuntimeTests.Tests.HotReload
 			return (fileName, line, pos);
 		}
 
-		public static ChangeXaml CreateHotReloadMessage(
+		public static UpdateFile CreateUpdateFileMessage(
 			this FrameworkElement element,
 			string originalText,
 			string replacementText)
 		{
 			var fileInfo = element.GetDebugParseContext();
-			return new ChangeXaml
+			return new UpdateFile
 			{
 				FilePath = fileInfo.FileName,
 				OriginalXaml = originalText,
