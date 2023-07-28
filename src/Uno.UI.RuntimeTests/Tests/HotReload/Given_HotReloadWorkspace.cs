@@ -265,7 +265,9 @@ internal class Given_HotReloadWorkspace
 			Path.Combine(basePath, "..", "..", "Uno.UI.RuntimeTests", "Tests", "HotReload", "Frame", "HRApp"),
 		};
 
-		var hrAppPath = searchPaths.FirstOrDefault();
+		var hrAppPath = searchPaths
+			.Where(Directory.Exists)
+			.FirstOrDefault();
 
 		if (hrAppPath is null)
 		{
