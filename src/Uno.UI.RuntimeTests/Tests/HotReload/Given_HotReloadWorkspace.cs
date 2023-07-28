@@ -18,6 +18,7 @@ using Windows.UI.Composition;
 using System.Threading;
 using System.Xml;
 using Windows.Storage.AccessCache;
+using System.Linq;
 
 namespace Uno.UI.RuntimeTests.Tests.HotReload;
 
@@ -256,7 +257,21 @@ internal class Given_HotReloadWorkspace
 	private static string GetHotReloadAppPath()
 	{
 		var basePath = Path.GetDirectoryName(Application.Current.GetType().Assembly.Location)!;
-		var hrAppPath = Path.Combine(basePath, "..", "..", "..", "..", "..", "Uno.UI.RuntimeTests", "Tests", "HotReload", "Frame", "HRApp");
+
+		var searchPaths = new[] {
+			Path.Combine(basePath, "..", "..", "..", "..", "..", "Uno.UI.RuntimeTests", "Tests", "HotReload", "Frame", "HRApp"),
+
+			// /Users/runner/work/1/s/build/skia-gtk-samples-app/../../../../../Uno.UI.RuntimeTests/Tests/HotReload/Frame/HRApp
+			Path.Combine(basePath, "..", "..", "Uno.UI.RuntimeTests", "Tests", "HotReload", "Frame", "HRApp"),
+		};
+
+		var hrAppPath = searchPaths.FirstOrDefault();
+
+		if (hrAppPath is null)
+		{
+			throw new InvalidOperationException("Unable to find HRApp folder in " + string.Join(", ", searchPaths));
+		}
+
 		return hrAppPath;
 	}
 
