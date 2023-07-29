@@ -138,6 +138,8 @@ internal class Given_HotReloadWorkspace
 			"dotnet",
 			new() {
 				"run",
+				"--configuration",
+				Configuration,
 				"--no-build",
 				"--uitest",
 				testOutput
