@@ -147,9 +147,11 @@ jobs:
       # Build source generators for hot reload runtime tests
       cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
       dotnet build -c Release
-      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.SourceGenerators
+      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
       dotnet build -c Release
-    displayName: Build Source Generators
+      cd $(build.sourcesdirectory)/src/Uno.UI.RemoteControl.Host
+      dotnet build -c Release
+    displayName: Build HR dependencies
 
   - script: |
         cd $(SamplesAppArtifactPath)
@@ -230,14 +232,6 @@ jobs:
   - template: templates/dotnet-install.yml
 
   - script: |
-      # Build source generators for hot reload runtime tests
-      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
-      dotnet build -c Release
-      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.SourceGenerators
-      dotnet build -c Release
-    displayName: Build Source Generators
-
-  - script: |
         cd $(SamplesAppArtifactPath)
         dotnet SamplesApp.Skia.Wpf.dll --runtime-tests=$(build.sourcesdirectory)/build/skia-wpf-runtime-tests-results.xml
 
@@ -271,14 +265,6 @@ jobs:
         downloadPath: '$(build.sourcesdirectory)/build'
 
   - template: templates/dotnet-install.yml
-
-  - script: |
-      # Build source generators for hot reload runtime tests
-      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
-      dotnet build -c Release
-      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.SourceGenerators
-      dotnet build -c Release
-    displayName: Build Source Generators
 
   - script: |
         cd $(SamplesAppArtifactPath)

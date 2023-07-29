@@ -784,29 +784,47 @@ namespace Uno.UI.Samples.Tests
 							object returnValue = null;
 							if (test.RunsOnUIThread)
 							{
-								await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+								var cts = new TaskCompletionSource();
+
+								_ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
 								{
-									if (instance is IInjectPointers pointersInjector)
+									try
 									{
-										pointersInjector.CleanupPointers();
-									}
-
-									if (testCase.Pointer is { } pt)
-									{
-										var ptSubscription = (instance as IInjectPointers ?? throw new InvalidOperationException("test class does not supports pointer selection.")).SetPointer(pt);
-
-										cleanupActions.Add(_ =>
+										if (instance is IInjectPointers pointersInjector)
 										{
-											ptSubscription.Dispose();
-											return Task.CompletedTask;
-										});
-									}
+											pointersInjector.CleanupPointers();
+										}
 
-									sw.Start();
-									testClassInfo.Initialize?.Invoke(instance, Array.Empty<object>());
-									returnValue = test.Method.Invoke(instance, testCase.Parameters);
-									sw.Stop();
+										if (testCase.Pointer is { } pt)
+										{
+											var ptSubscription = (instance as IInjectPointers ?? throw new InvalidOperationException("test class does not supports pointer selection.")).SetPointer(pt);
+
+											cleanupActions.Add(_ =>
+											{
+												ptSubscription.Dispose();
+												return Task.CompletedTask;
+											});
+										}
+
+										sw.Start();
+										var initializeReturn = testClassInfo.Initialize?.Invoke(instance, Array.Empty<object>());
+										if (initializeReturn is Task initializeReturnTask)
+										{
+											await initializeReturnTask;
+										}
+
+										returnValue = test.Method.Invoke(instance, testCase.Parameters);
+										sw.Stop();
+
+										cts.TrySetResult(e);
+									}
+									catch (Exception e)
+									{
+										cts.TrySetException(e);
+									}
 								});
+
+								await cts.Task;
 							}
 							else
 							{

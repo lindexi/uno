@@ -135,6 +135,8 @@ internal class Given_HotReloadWorkspace
 
 		var hrAppPath = GetHotReloadAppPath();
 
+		typeof(Given_HotReloadWorkspace).Log().Debug($"Starting test app (path{hrAppPath})");
+
 		var p = await RunProcess(
 			ct,
 			"dotnet",
@@ -155,6 +157,8 @@ internal class Given_HotReloadWorkspace
 
 		if (p.ExitCode != 0)
 		{
+			typeof(Given_HotReloadWorkspace).Log().Error($"Failed to start (path{hrAppPath})");
+
 			throw new InvalidOperationException("Failed to run HR app");
 		}
 
@@ -220,40 +224,21 @@ internal class Given_HotReloadWorkspace
 
 	public static async Task BuildTestApp()
 	{
-		var hrAppPath = GetHotReloadAppPath();
-
-		var pi = new ProcessStartInfo("dotnet")
-		{
-			UseShellExecute = false,
-			CreateNoWindow = true,
-			WindowStyle = ProcessWindowStyle.Normal,
-			WorkingDirectory = hrAppPath,
-			ArgumentList =
-			{
+		var process = StartProcess(
+			"dotnet",
+			new() {
 				"build",
 				$"-p:UnoRemoteControlPort={_remoteControlPort}",
 				$"-p:UnoRemoteControlHost=127.0.0.1",
 				"--configuration",
-				Configuration,
-			}
-		};
+				Configuration
+			},
+			GetHotReloadAppPath(),
+			"HRAppBuild",
+			true
+		);
 
-		// redirect the output
-		pi.RedirectStandardOutput = true;
-		pi.RedirectStandardError = true;
-
-		var process = new System.Diagnostics.Process();
-
-		// hookup the eventhandlers to capture the data that is received
-		process.OutputDataReceived += (sender, args) => typeof(Given_HotReloadWorkspace).Log().Debug(args.Data ?? "");
-		process.ErrorDataReceived += (sender, args) => typeof(Given_HotReloadWorkspace).Log().Error(args.Data ?? "");
-
-		process.StartInfo = pi;
-		process.Start();
-
-		// start our event pumps
-		process.BeginOutputReadLine();
-		process.BeginErrorReadLine();
+		await process.WaitForExitAsync();
 
 		await process.WaitForExitAsync();
 
@@ -321,6 +306,7 @@ internal class Given_HotReloadWorkspace
 
 			if (!File.Exists(hostBinPath))
 			{
+				typeof(Given_HotReloadWorkspace).Log().Error($"RCHost {hostBinPath} does not exist");
 				throw new InvalidOperationException($"Unable to find {hostBinPath}");
 			}
 
@@ -340,8 +326,8 @@ internal class Given_HotReloadWorkspace
 			_process = new System.Diagnostics.Process();
 
 			// hookup the eventhandlers to capture the data that is received
-			_process.OutputDataReceived += (sender, args) => typeof(Given_HotReloadWorkspace).Log().Debug(args.Data ?? "");
-			_process.ErrorDataReceived += (sender, args) => typeof(Given_HotReloadWorkspace).Log().Error(args.Data ?? "");
+			_process.OutputDataReceived += (sender, args) => typeof(Given_HotReloadWorkspace).Log().Debug("RCHost: " + args.Data ?? "");
+			_process.ErrorDataReceived += (sender, args) => typeof(Given_HotReloadWorkspace).Log().Error("RCHost: " + args.Data ?? "");
 
 			_process.StartInfo = pi;
 			_process.Start();
