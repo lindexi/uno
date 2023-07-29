@@ -147,7 +147,7 @@ jobs:
       # Build source generators for hot reload runtime tests
       cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
       dotnet build -c Release
-      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.Tasks
+      cd $(build.sourcesdirectory)/src/SourceGenerators/Uno.UI.SourceGenerators
       dotnet build -c Release
       cd $(build.sourcesdirectory)/src/Uno.UI.RemoteControl.Host
       dotnet build -c Release -p:UnoDisableNet8=true
