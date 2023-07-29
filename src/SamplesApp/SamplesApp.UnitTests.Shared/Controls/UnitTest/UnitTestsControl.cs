@@ -784,7 +784,7 @@ namespace Uno.UI.Samples.Tests
 							object returnValue = null;
 							if (test.RunsOnUIThread)
 							{
-								var cts = new TaskCompletionSource();
+								var cts = new TaskCompletionSource<bool>();
 
 								_ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
 								{
@@ -816,7 +816,7 @@ namespace Uno.UI.Samples.Tests
 										returnValue = test.Method.Invoke(instance, testCase.Parameters);
 										sw.Stop();
 
-										cts.TrySetResult();
+										cts.TrySetResult(true);
 									}
 									catch (Exception e)
 									{
