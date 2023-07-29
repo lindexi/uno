@@ -35,10 +35,12 @@ internal class Given_HotReloadWorkspace
 	[TestInitialize]
 	public async Task Initialize()
 	{
+#if !DEBUG
 		if (Environment.GetEnvironmentVariable("UnoEnableHRuntimeTests") != "true")
 		{
 			Assert.Inconclusive($"HotReload workspace test are not enabled for this platform (UnoEnableHRuntimeTests env var is not defined)");
 		}
+#endif
 
 		await InitializeServer();
 		await BuildTestApp();
@@ -282,6 +284,27 @@ internal class Given_HotReloadWorkspace
 		return hrAppPath;
 	}
 
+	private static string GetRCHostAppPath()
+	{
+		var basePath = Path.GetDirectoryName(Application.Current.GetType().Assembly.Location)!;
+
+		var searchPaths = new[] {
+			Path.Combine(basePath, "..", "..", "..", "..", "..", "Uno.UI.RemoteControl.Host", "bin"),
+			Path.Combine(basePath, "..", "..", "src", "Uno.UI.RemoteControl.Host", "bin"),
+		};
+
+		var hrAppPath = searchPaths
+			.Where(Directory.Exists)
+			.FirstOrDefault();
+
+		if (hrAppPath is null)
+		{
+			throw new InvalidOperationException("Unable to find RCHost folder in " + string.Join(", ", searchPaths));
+		}
+
+		return hrAppPath;
+	}
+
 	private static void StartServer(int port)
 	{
 		if (_process?.HasExited ?? true)
@@ -290,7 +313,7 @@ internal class Given_HotReloadWorkspace
 			var runtimeVersionPath = version <= 5 ? "netcoreapp3.1" : $"net{version}.0";
 
 			var basePath = Path.GetDirectoryName(Application.Current.GetType().Assembly.Location)!;
-			var toolsPath = Path.Combine(basePath, "..", "..", "..", "..", "..", "Uno.UI.RemoteControl.Host", "bin", Configuration);
+			var toolsPath = Path.Combine(GetRCHostAppPath(), Configuration);
 
 			var sb = new StringBuilder();
 
