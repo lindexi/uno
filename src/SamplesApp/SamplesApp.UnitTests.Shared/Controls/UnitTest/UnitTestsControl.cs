@@ -816,7 +816,7 @@ namespace Uno.UI.Samples.Tests
 										returnValue = test.Method.Invoke(instance, testCase.Parameters);
 										sw.Stop();
 
-										cts.TrySetResult(e);
+										cts.TrySetResult();
 									}
 									catch (Exception e)
 									{
