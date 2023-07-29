@@ -175,6 +175,8 @@ internal class Given_HotReloadWorkspace
 	{
 		var process = StartProcess(executable, parameters, workingDirectory, logPrefix, waitForExit);
 
+		typeof(Given_HotReloadWorkspace).Log().Error(logPrefix + $" waiting for process exit");
+
 		await process.WaitForExitAsync();
 
 		return process;
