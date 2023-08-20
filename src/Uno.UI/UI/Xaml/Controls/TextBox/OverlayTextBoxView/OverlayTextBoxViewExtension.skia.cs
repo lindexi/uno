@@ -151,7 +151,7 @@ internal abstract class OverlayTextBoxViewExtension : IOverlayTextBoxViewExtensi
 			return;
 		}
 
-		var transformToRoot = _contentElement.TransformToVisual(Windows.UI.Xaml.Window.IShouldntUseCurrentWindow.Content);
+		var transformToRoot = _contentElement.TransformToVisual(Windows.UI.Xaml.Window.IShouldntUseCurrentWindow!.Content);
 		var point = transformToRoot.TransformPoint(new Point(_contentElement.Padding.Left, _contentElement.Padding.Top));
 		var pointX = (int)point.X;
 		var pointY = (int)point.Y;
