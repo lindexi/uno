@@ -32,7 +32,7 @@ namespace Uno.WinUI.Runtime.Skia.X11
 
 			if (renderCount == 0)
 			{
-				Console.WriteLine($"First render {Stopwatch.GetTimestamp()}");
+				//Console.WriteLine($"First render {Stopwatch.GetTimestamp()}");
 			}
 
 			if (this.Log().IsEnabled(LogLevel.Trace))
