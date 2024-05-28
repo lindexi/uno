@@ -208,6 +208,9 @@ namespace Uno.WinUI.Runtime.Skia.X11
 		public static extern IntPtr XCreateColormap(IntPtr display, IntPtr window, IntPtr visual, int create);
 
 		[DllImport(libX11)]
+		public static extern void XMatchVisualInfo(IntPtr display, int screen, int depth, int klass, out XVisualInfo info);
+
+		[DllImport(libX11)]
 		public static extern int XLookupString(ref XKeyEvent xevent, byte* buffer, int num_bytes, out nint keysym, IntPtr composeStatus);
 
 		[DllImport(libX11)]

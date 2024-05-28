@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
+
 using Microsoft.UI.Xaml;
 using SkiaSharp;
 using Uno.Foundation.Logging;
@@ -8,13 +11,15 @@ namespace Uno.WinUI.Runtime.Skia.X11
 {
 	internal class X11SoftwareRenderer(IXamlRootHost host, X11Window x11window) : IX11Renderer
 	{
-		private const int ColorDepth = 24;
+		private const int ColorDepth = 32;
 		private const int BitmapPad = 32;
 
 		private SKBitmap? _bitmap;
 		private SKSurface? _surface;
-		private IntPtr? _xImage;
+		private XImage? _xImage;
 		private int renderCount;
+
+		private IntPtr? _gc;
 
 		void IX11Renderer.InvalidateRender()
 		{
@@ -23,6 +28,11 @@ namespace Uno.WinUI.Runtime.Skia.X11
 			if (host is X11XamlRootHost { Closed.IsCompleted: true })
 			{
 				return;
+			}
+
+			if (renderCount == 0)
+			{
+				Console.WriteLine($"First render {Stopwatch.GetTimestamp()}");
 			}
 
 			if (this.Log().IsEnabled(LogLevel.Trace))
@@ -51,10 +61,10 @@ namespace Uno.WinUI.Runtime.Skia.X11
 					unsafe
 					{
 						// XDestroyImage frees the buffer as well, so we unset it first
-						var ptr = (XImage*)xImage.ToPointer();
-						ptr->data = IntPtr.Zero;
+						ref var ptr = ref xImage;
+						ptr.data = IntPtr.Zero;
+					    var _3 = XLib.XDestroyImage(new IntPtr(&xImage));
 					}
-					var _3 = XLib.XDestroyImage(xImage);
 					_xImage = null;
 				}
 
@@ -79,23 +89,41 @@ namespace Uno.WinUI.Runtime.Skia.X11
 				canvas.Flush();
 			}
 
-			_xImage ??= X11Helper.XCreateImage(
-				display: x11window.Display,
-				visual: /* CopyFromParent */ 0,
-				depth: ColorDepth,
-				format: /* ZPixmap */ 2,
-				offset: 0,
-				data: _bitmap.GetPixels(),
-				width: (uint)width,
-				height: (uint)height,
-				bitmap_pad: BitmapPad,
-				bytes_per_line: 0); // 0 bytes per line assume contiguous lines i.e. pad * width
+			if (_xImage is null)
+			{
+				const int bytePerPixelCount = 4; // RGBA 一共4个 byte 长度
+				var bitPerByte = 8;
 
+				var bitmapWidth = width;
+				var bitmapHeight = height;
+
+				var img = new XImage();
+				int bitsPerPixel = bytePerPixelCount * bitPerByte;
+				img.width = bitmapWidth;
+				img.height = bitmapHeight;
+				img.format = 2; //ZPixmap;
+				img.data = _bitmap.GetPixels();
+				img.byte_order = 0; // LSBFirst;
+				img.bitmap_unit = bitsPerPixel;
+				img.bitmap_bit_order = 0; // LSBFirst;
+				img.bitmap_pad = bitsPerPixel;
+				img.depth = bitsPerPixel;
+				img.bytes_per_line = bitmapWidth * bytePerPixelCount;
+				img.bits_per_pixel = bitsPerPixel;
+				_ = X11Helper.XInitImage(ref img);
+
+				_xImage = img;
+			}
+
+			var image = _xImage.Value;
+
+			_gc ??= X11Helper.XCreateGC(x11window.Display, x11window.Window, 0, 0);
+			var gc = _gc.Value;
 			var _4 = X11Helper.XPutImage(
 				display: x11window.Display,
 				drawable: x11window.Window,
-				gc: X11Helper.XDefaultGC(x11window.Display, XLib.XDefaultScreen(x11window.Display)),
-				image: _xImage.Value,
+				gc: gc,
+				image: ref image,
 				srcx: 0,
 				srcy: 0,
 				destx: 0,
@@ -104,6 +132,19 @@ namespace Uno.WinUI.Runtime.Skia.X11
 				height: (uint)height);
 
 			var _5 = XLib.XFlush(x11window.Display); // unnecessary on most X11 implementations
+
+			// 尝试输出渲染的图
+			var fileName = $"x{renderCount}.png";
+			renderCount++;
+			using (var skData = _bitmap.Encode(SKEncodedImageFormat.Png, 100))
+			{
+				var file = new FileInfo(fileName);
+				using (var fileStream = file.OpenWrite())
+				{
+					fileStream.SetLength(0);
+					skData.SaveTo(fileStream);
+				}
+			}
 		}
 	}
 }

@@ -308,10 +308,18 @@ internal static class X11Helper
 	[DllImport(libX11)]
 	public static extern int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, IntPtr image,
 		int srcx, int srcy, int destx, int desty, uint width, uint height);
+	[DllImport(libX11)]
+	public static extern int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, ref XImage image,
+		int srcx, int srcy, int destx, int desty, uint width, uint height);
+	[DllImport(libX11)]
+	public static extern IntPtr XCreateGC(IntPtr display, IntPtr drawable, ulong valuemask, IntPtr values);
 
 	[DllImport(libX11)]
 	public static extern IntPtr XCreateImage(IntPtr display, IntPtr visual, uint depth, int format, int offset,
 		IntPtr data, uint width, uint height, int bitmap_pad, int bytes_per_line);
+
+	[DllImport(libX11)]
+	public static extern int XInitImage(ref XImage image);
 
 	[DllImport(libX11)]
 	public static extern int XPending(IntPtr display);

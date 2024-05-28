@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -316,18 +317,51 @@ internal partial class X11XamlRootHost : IXamlRootHost
 		}
 		else
 		{
-			window = XLib.XCreateSimpleWindow(
-				display,
-				XLib.XRootWindow(display, screen),
-				0,
-				0,
-				(int)size.Width,
-				(int)size.Height,
-				0,
-				XLib.XBlackPixel(display, screen),
-				XLib.XWhitePixel(display, screen));
+			XLib.XMatchVisualInfo(display, screen, 32, 4, out var info);
+			var visual = info.visual;
+			Console.WriteLine($"info.depth={info.depth}");
+
+			var rootWindow = XLib.XRootWindow(display, screen);
+			var xSetWindowAttributes = new XSetWindowAttributes()
+			{
+				backing_store = 1,
+				bit_gravity = Gravity.NorthWestGravity,
+				win_gravity = Gravity.NorthWestGravity,
+				//override_redirect = true, // 设置窗口的override_redirect属性为True，以避免窗口管理器的干预
+				colormap = XLib.XCreateColormap(display, rootWindow, visual, /* AllocNone */ 0),
+				border_pixel = 0,
+				background_pixel = IntPtr.Zero,
+			};
+
+			var valueMask =
+					//SetWindowValuemask.BackPixmap
+					0
+					| SetWindowValuemask.BackPixel
+					| SetWindowValuemask.BorderPixel
+					| SetWindowValuemask.BitGravity
+					| SetWindowValuemask.WinGravity
+					| SetWindowValuemask.BackingStore
+					| SetWindowValuemask.ColorMap
+				//| SetWindowValuemask.OverrideRedirect
+				;
+
+			window = XLib.XCreateWindow(display, rootWindow, 0, 0, (int)size.Width,
+				(int)size.Height, 5, 32, /* InputOutput */ 1, visual,
+				(UIntPtr)(valueMask), ref xSetWindowAttributes);
+
+			//window = XLib.XCreateSimpleWindow(
+			//	display,
+			//	XLib.XRootWindow(display, screen),
+			//	0,
+			//	0,
+			//	(int)size.Width,
+			//	(int)size.Height,
+			//	0,
+			//	XLib.XBlackPixel(display, screen),
+			//	IntPtr.Zero);
 			XLib.XSelectInput(display, window, EventsMask);
 			_x11Window = new X11Window(display, window);
+			Console.WriteLine($"Create X11 Window {Stopwatch.GetTimestamp()} Frequency={Stopwatch.Frequency}");
 		}
 
 		// Tell the WM to send a WM_DELETE_WINDOW message before closing
