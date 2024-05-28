@@ -133,18 +133,18 @@ namespace Uno.WinUI.Runtime.Skia.X11
 
 			var _5 = XLib.XFlush(x11window.Display); // unnecessary on most X11 implementations
 
-			// 尝试输出渲染的图
-			var fileName = $"x{renderCount}.png";
+			//// 尝试输出渲染的图
+			//var fileName = $"x{renderCount}.png";
 			renderCount++;
-			using (var skData = _bitmap.Encode(SKEncodedImageFormat.Png, 100))
-			{
-				var file = new FileInfo(fileName);
-				using (var fileStream = file.OpenWrite())
-				{
-					fileStream.SetLength(0);
-					skData.SaveTo(fileStream);
-				}
-			}
+			//using (var skData = _bitmap.Encode(SKEncodedImageFormat.Png, 100))
+			//{
+			//	var file = new FileInfo(fileName);
+			//	using (var fileStream = file.OpenWrite())
+			//	{
+			//		fileStream.SetLength(0);
+			//		skData.SaveTo(fileStream);
+			//	}
+			//}
 		}
 	}
 }
