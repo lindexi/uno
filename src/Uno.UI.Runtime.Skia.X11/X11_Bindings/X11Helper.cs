@@ -323,12 +323,15 @@ internal static partial class X11Helper
 	public unsafe static partial int poll(Pollfd* __fds, IntPtr __nfds, int __timeout);
 
 	[LibraryImport(libX11)]
-	public static partial int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, IntPtr image,
+	public static partial int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, ref XImage image,
 		int srcx, int srcy, int destx, int desty, uint width, uint height);
 
 	[LibraryImport(libX11)]
 	public static partial IntPtr XCreateImage(IntPtr display, IntPtr visual, uint depth, int format, int offset,
 		IntPtr data, uint width, uint height, int bitmap_pad, int bytes_per_line);
+
+	[LibraryImport(libX11)]
+	public static partial int XInitImage(ref XImage image);
 
 	[LibraryImport(libX11)]
 	public static partial int XPending(IntPtr display);
