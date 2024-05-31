@@ -498,7 +498,7 @@ internal partial class X11XamlRootHost : IXamlRootHost
 				_renderer.BackgroundColor = brush.Color;
 			}
 		}
-		else
+		else if (_window.Background is not null)
 		{
 			if (this.Log().IsEnabled(LogLevel.Warning))
 			{
