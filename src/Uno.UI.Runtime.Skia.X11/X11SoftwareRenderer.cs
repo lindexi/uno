@@ -14,6 +14,7 @@ namespace Uno.WinUI.Runtime.Skia.X11
 		private SKSurface? _surface;
 		private XImage? _xImage;
 		private int _renderCount;
+		private IntPtr? _gc;
 		public SKColor BackgroundColor { get; set; } = SKColors.White;
 
 		void IX11Renderer.InvalidateRender()
@@ -106,11 +107,14 @@ namespace Uno.WinUI.Runtime.Skia.X11
 
 			var image = _xImage.Value;
 
+			_gc ??= X11Helper.XCreateGC(x11window.Display, x11window.Window, 0, 0);
+			var gc = _gc.Value;
+
 			var _4 = X11Helper.XPutImage(
 				display: x11window.Display,
 				drawable: x11window.Window,
-				gc: X11Helper.XDefaultGC(x11window.Display, XLib.XDefaultScreen(x11window.Display)),
-				ref image,
+				gc: gc,
+				image: ref image,
 				srcx: 0,
 				srcy: 0,
 				destx: 0,
