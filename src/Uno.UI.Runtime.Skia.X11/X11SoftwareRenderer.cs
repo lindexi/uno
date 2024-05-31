@@ -14,7 +14,8 @@ namespace Uno.WinUI.Runtime.Skia.X11
 		private SKBitmap? _bitmap;
 		private SKSurface? _surface;
 		private IntPtr? _xImage;
-		private int renderCount;
+		private int _renderCount;
+		public SKColor BackgroundColor { get; set; } = SKColors.White;
 
 		void IX11Renderer.InvalidateRender()
 		{
@@ -27,7 +28,7 @@ namespace Uno.WinUI.Runtime.Skia.X11
 
 			if (this.Log().IsEnabled(LogLevel.Trace))
 			{
-				this.Log().Trace($"Render {renderCount++}");
+				this.Log().Trace($"Render {_renderCount++}");
 			}
 
 			XWindowAttributes attributes = default;
@@ -65,7 +66,7 @@ namespace Uno.WinUI.Runtime.Skia.X11
 			var canvas = _surface.Canvas;
 			using (new SKAutoCanvasRestore(canvas, true))
 			{
-				canvas.Clear(SKColors.Transparent);
+				canvas.Clear(BackgroundColor);
 				var scale = host.RootElement?.XamlRoot is { } root
 					? root.RasterizationScale
 					: 1;

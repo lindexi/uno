@@ -44,6 +44,7 @@ internal partial class X11XamlRootHost : IXamlRootHost
 	private readonly ApplicationView _applicationView;
 	private readonly X11WindowWrapper _wrapper;
 	private readonly Window _window;
+	private readonly CompositeDisposable _disposables = new();
 
 	private X11Window? _x11Window;
 	private IX11Renderer? _renderer;
@@ -93,6 +94,8 @@ internal partial class X11XamlRootHost : IXamlRootHost
 
 		// only start listening to events after we're done setting everything up
 		InitializeX11EventsThread();
+
+		RegisterForBackgroundColor();
 	}
 
 	public static X11XamlRootHost? GetHostFromWindow(Window window)
@@ -439,4 +442,29 @@ internal partial class X11XamlRootHost : IXamlRootHost
 	void IXamlRootHost.InvalidateRender() => _renderer?.InvalidateRender();
 
 	UIElement? IXamlRootHost.RootElement => _window.RootElement;
+
+	private void RegisterForBackgroundColor()
+	{
+		UpdateRendererBackground();
+
+		_disposables.Add(_window.RegisterBackgroundChangedEvent((s, e) => UpdateRendererBackground()));
+	}
+
+	private void UpdateRendererBackground()
+	{
+		if (_window.Background is Microsoft.UI.Xaml.Media.SolidColorBrush brush)
+		{
+			if (_renderer is not null)
+			{
+				_renderer.BackgroundColor = brush.Color;
+			}
+		}
+		else
+		{
+			if (this.Log().IsEnabled(LogLevel.Warning))
+			{
+				this.Log().Warn($"This platform only supports SolidColorBrush for the Window background");
+			}
+		}
+	}
 }
