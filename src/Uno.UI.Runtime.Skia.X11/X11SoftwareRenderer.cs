@@ -12,7 +12,7 @@ namespace Uno.WinUI.Runtime.Skia.X11
 
 		private SKBitmap? _bitmap;
 		private SKSurface? _surface;
-		private XImage? _xImage;
+		private IntPtr? _xImage;
 		private int _renderCount;
 		private IntPtr? _gc;
 		public SKColor BackgroundColor { get; set; } = SKColors.White;
@@ -51,10 +51,10 @@ namespace Uno.WinUI.Runtime.Skia.X11
 					unsafe
 					{
 						// XDestroyImage frees the buffer as well, so we unset it first
-						ref var ptr = ref xImage;
-						ptr.data = IntPtr.Zero;
-						var _3 = XLib.XDestroyImage(new IntPtr(&xImage));
+						var ptr = (XImage*)xImage.ToPointer();
+						ptr->data = IntPtr.Zero;
 					}
+					var _3 = XLib.XDestroyImage(xImage);
 					_xImage = null;
 				}
 
@@ -79,31 +79,17 @@ namespace Uno.WinUI.Runtime.Skia.X11
 				canvas.Flush();
 			}
 
-			if (_xImage is null)
-			{
-				const int bytePerPixelCount = 4; // RGBA
-				var bitPerByte = 8;
-
-				var bitmapWidth = width;
-				var bitmapHeight = height;
-
-				var img = new XImage();
-				int bitsPerPixel = bytePerPixelCount * bitPerByte;
-				img.width = bitmapWidth;
-				img.height = bitmapHeight;
-				img.format = 2; //ZPixmap;
-				img.data = _bitmap.GetPixels();
-				img.byte_order = 0; // LSBFirst;
-				img.bitmap_unit = bitsPerPixel;
-				img.bitmap_bit_order = 0; // LSBFirst;
-				img.bitmap_pad = BitmapPad;
-				img.depth = (int)colorDepth;
-				img.bytes_per_line = bitmapWidth * bytePerPixelCount;
-				img.bits_per_pixel = bitsPerPixel;
-				_ = X11Helper.XInitImage(ref img);
-
-				_xImage = img;
-			}
+			_xImage ??= X11Helper.XCreateImage(
+				display: x11window.Display,
+				visual: /* CopyFromParent */ 0,
+				depth: colorDepth,
+				format: /* ZPixmap */ 2,
+				offset: 0,
+				data: _bitmap.GetPixels(),
+				width: (uint)width,
+				height: (uint)height,
+				bitmap_pad: BitmapPad,
+				bytes_per_line: 0); // 0 bytes per line assume contiguous lines i.e. pad * width
 
 			var image = _xImage.Value;
 
@@ -114,7 +100,7 @@ namespace Uno.WinUI.Runtime.Skia.X11
 				display: x11window.Display,
 				drawable: x11window.Window,
 				gc: gc,
-				image: ref image,
+				image: image,
 				srcx: 0,
 				srcy: 0,
 				destx: 0,

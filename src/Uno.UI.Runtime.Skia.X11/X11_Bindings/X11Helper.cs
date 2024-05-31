@@ -327,6 +327,10 @@ internal static partial class X11Helper
 		int srcx, int srcy, int destx, int desty, uint width, uint height);
 
 	[LibraryImport(libX11)]
+	public static partial int XPutImage(IntPtr display, IntPtr drawable, IntPtr gc, IntPtr image,
+		int srcx, int srcy, int destx, int desty, uint width, uint height);
+
+	[LibraryImport(libX11)]
 	public static partial IntPtr XCreateGC(IntPtr display, IntPtr drawable, ulong valuemask, IntPtr values);
 
 	[LibraryImport(libX11)]
