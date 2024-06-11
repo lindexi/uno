@@ -93,12 +93,15 @@ internal partial class X11XamlRootHost : IXamlRootHost
 		});
 
 		UpdateWindowPropertiesFromPackage();
+		Console.WriteLine($"UpdateWindowPropertiesFromPackage {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
+
 		OnApplicationViewPropertyChanged(this, new PropertyChangedEventArgs(null));
 
 		// only start listening to events after we're done setting everything up
 		InitializeX11EventsThread();
 
 		RegisterForBackgroundColor();
+		Console.WriteLine($"X11XamlRootHost Íê³É {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
 	}
 
 	public static X11XamlRootHost? GetHostFromWindow(Window window)
@@ -339,6 +342,7 @@ internal partial class X11XamlRootHost : IXamlRootHost
 
 		// The window must be mapped before DisplayInformationExtension is initialized.
 		var _4 = XLib.XMapWindow(display, window);
+		Console.WriteLine($"Show Window {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
 
 		if (FeatureConfiguration.Rendering.UseOpenGLOnX11 ?? IsOpenGLSupported(display))
 		{

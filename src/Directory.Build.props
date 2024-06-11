@@ -60,10 +60,10 @@
 		<NetPreviousWpf>$(NetPrevious)-windows</NetPreviousWpf>
 		<NetCurrentWpf>$(NetCurrent)-windows</NetCurrentWpf>
 
-		<NetMobilePreviousAndCurrent>$(NetPreviousNetCoreMobile);$(NetCurrentNetCoreMobile)</NetMobilePreviousAndCurrent>
-		<NetWpfPreviousAndCurrent>$(NetPreviousWpf);$(NetCurrentWpf)</NetWpfPreviousAndCurrent>
-		<NetWasmPreviousAndCurrent>$(NetPrevious);$(NetCurrent)</NetWasmPreviousAndCurrent>
-		<NetSkiaPreviousAndCurrent>$(NetPrevious);$(NetCurrent)</NetSkiaPreviousAndCurrent>
+		<NetMobilePreviousAndCurrent>$(NetCurrentNetCoreMobile)</NetMobilePreviousAndCurrent>
+		<NetWpfPreviousAndCurrent>$(NetPreviousWpf)</NetWpfPreviousAndCurrent>
+		<NetWasmPreviousAndCurrent>$(NetPrevious)</NetWasmPreviousAndCurrent>
+		<NetSkiaPreviousAndCurrent>$(NetPrevious)</NetSkiaPreviousAndCurrent>
 		<NetReferencePreviousAndCurrent>$(NetPrevious);$(NetCurrent)</NetReferencePreviousAndCurrent>
 		<NetUnitTests>$(NetPrevious)</NetUnitTests>
 
