@@ -92,8 +92,9 @@ internal partial class X11XamlRootHost : IXamlRootHost
 			}
 		});
 
+		Console.WriteLine($"StartUpdateWindow {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
 		UpdateWindowPropertiesFromPackage();
-		Console.WriteLine($"UpdateWindowPropertiesFromPackage {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
+		Console.WriteLine($"EndUpdateWindow {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
 
 		OnApplicationViewPropertyChanged(this, new PropertyChangedEventArgs(null));
 
