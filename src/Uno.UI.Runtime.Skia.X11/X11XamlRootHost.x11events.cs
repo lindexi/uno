@@ -228,7 +228,7 @@ internal partial class X11XamlRootHost
 
 						try
 						{
-							var xiEvent = (XIEvent*)@event.GenericEventCookie.data;
+							var xiEvent = (XIEvent*)cookie.data;
 							if (xiEvent->evtype == XiEventType.XI_DeviceChanged)
 							{
 							}
