@@ -28,6 +28,7 @@
 #pragma warning disable CS0649
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.Marshalling;
 
@@ -45,6 +46,7 @@ namespace Uno.WinUI.Runtime.Skia.X11
 	{
 		private const string libX11 = "libX11.so.6";
 		private const string libX11Randr = "libXrandr.so.2";
+		const string libXInput = "libXi.so.6";
 
 		[LibraryImport(libX11)]
 		public static partial IntPtr XOpenDisplay(IntPtr display);
@@ -77,6 +79,63 @@ namespace Uno.WinUI.Runtime.Skia.X11
 
 		[LibraryImport(libX11)]
 		public static partial int XPending(IntPtr diplay);
+
+		[DllImport(libX11)]
+		public static extern bool XQueryExtension(IntPtr display, [MarshalAs(UnmanagedType.LPStr)] string name,
+			out int majorOpcode, out int firstEvent, out int firstError);
+
+		[DllImport(libXInput)]
+		public static extern int XIQueryVersion(IntPtr dpy, ref int major, ref int minor);
+
+		[DllImport(libXInput)]
+		internal unsafe static extern XIDeviceInfo* XIQueryDevice(IntPtr dpy, int deviceid, out int ndevices_return);
+
+		[DllImport(libXInput)]
+		internal unsafe static extern void XIFreeDeviceInfo(XIDeviceInfo* info);
+
+		public unsafe static bool XIMaskIsSet(void* ptr, int shift) =>
+			(((byte*)ptr)[shift >> 3] & (1 << (shift & 7))) != 0;
+
+		[DllImport(libXInput)]
+		internal unsafe static extern int XISelectEvents(
+			IntPtr dpy,
+			IntPtr win,
+			XIEventMask* masks,
+			int num_masks
+		);
+
+		internal static void XISetMask(ref int mask, XiEventType ev)
+		{
+			mask |= (1 << (int)ev);
+		}
+		public static int XiEventMaskLen { get; } = 4;
+
+		internal static int XiSelectEvents(IntPtr display, IntPtr window, Dictionary<int, List<XiEventType>> devices)
+		{
+			var masks = stackalloc int[devices.Count];
+			var emasks = stackalloc XIEventMask[devices.Count];
+			int c = 0;
+			foreach (var d in devices)
+			{
+				foreach (var ev in d.Value)
+					XISetMask(ref masks[c], ev);
+				emasks[c] = new XIEventMask
+				{
+					Mask = &masks[c],
+					Deviceid = d.Key,
+					MaskLen = XiEventMaskLen
+				};
+				c++;
+			}
+
+			return XISelectEvents(display, window, emasks, devices.Count);
+		}
+
+		[DllImport(libX11)]
+		public unsafe static extern bool XGetEventData(IntPtr display, XGenericEventCookie* cookie);
+
+		[DllImport(libX11)]
+		public unsafe static extern void XFreeEventData(IntPtr display, void* cookie);
 
 		[LibraryImport(libX11)]
 		public static partial IntPtr XSelectInput(IntPtr display, IntPtr window, IntPtr mask);

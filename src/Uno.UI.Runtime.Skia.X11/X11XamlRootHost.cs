@@ -14,6 +14,8 @@ using Microsoft.UI.Xaml;
 using SkiaSharp;
 using Uno.Disposables;
 using Uno.UI;
+using Windows.Devices.Input;
+using Windows.UI.Input.Inking;
 
 namespace Uno.WinUI.Runtime.Skia.X11;
 
@@ -329,6 +331,8 @@ internal partial class X11XamlRootHost : IXamlRootHost
 		{
 			(window, depth) = CreateSoftwareRenderWindow(display, screen, size);
 			_x11Window = new X11Window(display, window);
+
+			RegisterMultiTouch(_x11Window.Value);
 		}
 
 		// Tell the WM to send a WM_DELETE_WINDOW message before closing
@@ -352,6 +356,38 @@ internal partial class X11XamlRootHost : IXamlRootHost
 		else
 		{
 			_renderer = new X11SoftwareRenderer(this, _x11Window.Value, depth);
+		}
+	}
+
+	private X11DeviceInputManager? _x11DeviceInputManager;
+
+	private void RegisterMultiTouch(X11Window x11Window)
+	{
+		var touchInputManager = new X11DeviceInputManager(x11Window.Display);
+		_x11DeviceInputManager = touchInputManager;
+		var pointerDevice = touchInputManager.PointerDevice;
+
+		if (pointerDevice is not null)
+		{
+			XiEventType[] multiTouchEventTypes =
+			[
+				XiEventType.XI_TouchBegin,
+				XiEventType.XI_TouchUpdate,
+				XiEventType.XI_TouchEnd
+			];
+
+			XiEventType[] defaultEventTypes =
+			[
+				XiEventType.XI_Motion,
+				XiEventType.XI_ButtonPress,
+				XiEventType.XI_ButtonRelease,
+				XiEventType.XI_Leave,
+				XiEventType.XI_Enter,
+			];
+
+			List<XiEventType> eventTypes = [.. multiTouchEventTypes, .. defaultEventTypes];
+
+			XLib.XiSelectEvents(x11Window.Display, x11Window.Window, new Dictionary<int, List<XiEventType>> { [pointerDevice.Value.Deviceid] = eventTypes });
 		}
 	}
 
@@ -478,6 +514,8 @@ internal partial class X11XamlRootHost : IXamlRootHost
 		XLib.XSelectInput(display, window, EventsMask);
 		return (window, depth);
 	}
+
+
 
 	private bool IsOpenGLSupported(IntPtr display)
 	{

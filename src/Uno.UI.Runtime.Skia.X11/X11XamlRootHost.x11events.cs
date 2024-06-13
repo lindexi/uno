@@ -220,6 +220,61 @@ internal partial class X11XamlRootHost
 							this.Log().Debug($"Window {X11Window.Window.ToString("X", CultureInfo.InvariantCulture)} was reparented to parent window {@event.ReparentEvent.parent.ToString("X", CultureInfo.InvariantCulture)}.");
 						}
 						break;
+					case XEventName.GenericEvent:
+					{
+						var cookie = @event.GenericEventCookie;
+						XGenericEventCookie* data = &cookie;
+						XLib.XGetEventData(X11Window.Display, data);
+
+						try
+						{
+							var xiEvent = (XIEvent*)@event.GenericEventCookie.data;
+							if (xiEvent->evtype == XiEventType.XI_DeviceChanged)
+							{
+							}
+							else if (xiEvent->evtype is
+									 XiEventType.XI_ButtonPress
+									 or XiEventType.XI_ButtonRelease
+									 or XiEventType.XI_Motion
+									 or XiEventType.XI_TouchBegin
+									 or XiEventType.XI_TouchUpdate
+									 or XiEventType.XI_TouchEnd)
+							{
+								var xiDeviceEvent = (XIDeviceEvent*)xiEvent;
+								if (xiDeviceEvent->EventWindow == X11Window.Window)
+								{
+									_pointerSource?.DispatchMessage(xiDeviceEvent);
+								}
+							}
+							else if (xiEvent->evtype == XiEventType.XI_Enter)
+							{
+								var enterLeaveEvent = (XIEnterLeaveEvent*)xiEvent;
+								_pointerSource?.ProcessXIEnterEvent(enterLeaveEvent);
+							}
+							else if (xiEvent->evtype == XiEventType.XI_Leave)
+							{
+								var enterLeaveEvent = (XIEnterLeaveEvent*)xiEvent;
+								if
+								(
+									enterLeaveEvent->detail is
+									// 如果来源于上层，则忽略
+									XiEnterLeaveDetail.XINotifyAncestor
+								)
+								{
+								}
+								else
+								{
+									_pointerSource?.ProcessXILeaveEvent(enterLeaveEvent);
+								}
+							}
+						}
+						finally
+						{
+							XLib.XFreeEventData(X11Window.Display, data);
+						}
+
+						break;
+					}
 					default:
 						if (this.Log().IsEnabled(LogLevel.Error))
 						{
