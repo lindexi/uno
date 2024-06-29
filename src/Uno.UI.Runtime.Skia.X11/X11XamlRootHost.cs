@@ -94,9 +94,9 @@ internal partial class X11XamlRootHost : IXamlRootHost
 			}
 		});
 
-		Console.WriteLine($"StartUpdateWindow {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
+		//Console.WriteLine($"StartUpdateWindow {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
 		UpdateWindowPropertiesFromPackage();
-		Console.WriteLine($"EndUpdateWindow {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
+		//Console.WriteLine($"EndUpdateWindow {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
 
 		OnApplicationViewPropertyChanged(this, new PropertyChangedEventArgs(null));
 
@@ -104,7 +104,7 @@ internal partial class X11XamlRootHost : IXamlRootHost
 		InitializeX11EventsThread();
 
 		RegisterForBackgroundColor();
-		Console.WriteLine($"X11XamlRootHost 完成 {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
+		//Console.WriteLine($"X11XamlRootHost 完成 {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
 	}
 
 	public static X11XamlRootHost? GetHostFromWindow(Window window)
@@ -347,7 +347,7 @@ internal partial class X11XamlRootHost : IXamlRootHost
 
 		// The window must be mapped before DisplayInformationExtension is initialized.
 		var _4 = XLib.XMapWindow(display, window);
-		Console.WriteLine($"Show Window {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
+		//Console.WriteLine($"Show Window {Environment.TickCount64} Thread={Environment.CurrentManagedThreadId}");
 
 		if (FeatureConfiguration.Rendering.UseOpenGLOnX11 ?? IsOpenGLSupported(display))
 		{
