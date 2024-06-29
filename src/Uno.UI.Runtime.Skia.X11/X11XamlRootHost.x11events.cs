@@ -44,11 +44,11 @@ internal partial class X11XamlRootHost
 			throw new InvalidOperationException($"{nameof(X11PointerInputSource)} is set twice.");
 		}
 		_pointerSource = pointerSource;
-		if (_x11DeviceInputManager is null)
-		{
-			Console.WriteLine($"SetPointerSource _x11DeviceInputManager is null");
-		}
-		_pointerSource.X11DeviceInputManager = _x11DeviceInputManager;
+		//if (_x11DeviceInputManager is null)
+		//{
+		//	Console.WriteLine($"SetPointerSource _x11DeviceInputManager is null");
+		//}
+		//_pointerSource.X11DeviceInputManager = _x11DeviceInputManager;
 	}
 
 	public void SetKeyboardSource(X11KeyboardInputSource keyboardSource)

@@ -93,7 +93,7 @@ internal partial class X11PointerInputSource
 
 		var id = xiDeviceEvent->detail;
 
-		Console.WriteLine($"Dispatcher Id={id} X11DeviceInputManager != null={X11DeviceInputManager != null}");
+		//Console.WriteLine($"Dispatcher Id={id} X11DeviceInputManager != null={X11DeviceInputManager != null}");
 
 		if (isMouse)
 		{
