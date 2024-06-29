@@ -51,6 +51,11 @@ namespace Uno.WinUI.Runtime.Skia.X11
 		[LibraryImport(libX11)]
 		public static partial IntPtr XOpenDisplay(IntPtr display);
 
+		[DllImport(libX11)]
+		public static extern int XDisplayWidth(IntPtr display, int screen_number);
+		[DllImport(libX11)]
+		public static extern int XDisplayHeight(IntPtr display, int screen_number);
+
 		[LibraryImport(libX11)]
 		public static partial int XDefaultDepth(IntPtr display, int screen);
 

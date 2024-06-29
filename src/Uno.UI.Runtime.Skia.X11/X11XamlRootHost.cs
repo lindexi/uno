@@ -363,7 +363,7 @@ internal partial class X11XamlRootHost : IXamlRootHost
 
 	private void RegisterMultiTouch(X11Window x11Window)
 	{
-		var touchInputManager = new X11DeviceInputManager(x11Window.Display);
+		var touchInputManager = new X11DeviceInputManager(x11Window.Display, x11Window.Window);
 		_x11DeviceInputManager = touchInputManager;
 		var pointerDevice = touchInputManager.PointerDevice;
 

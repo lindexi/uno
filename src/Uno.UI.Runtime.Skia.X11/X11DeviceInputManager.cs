@@ -5,9 +5,12 @@ namespace Uno.WinUI.Runtime.Skia.X11;
 
 unsafe class X11DeviceInputManager
 {
-	public X11DeviceInputManager(IntPtr display)
+	public X11DeviceInputManager(IntPtr display, IntPtr x11Window)
 	{
 		Display = display;
+		// 更加准确的做法应该是获取窗口对应的屏幕
+		var screen = XLib.XDefaultScreen(display);
+		Screen = screen;
 
 		var devices = (XIDeviceInfo*)XLib.XIQueryDevice(Display,
 			(int)XiPredefinedDeviceId.XIAllMasterDevices, out int num);
@@ -76,6 +79,13 @@ unsafe class X11DeviceInputManager
 	}
 
 	public IntPtr Display { get; }
+	public int Screen { get; }
+
+	public int XDisplayWidth => _xDisplayWidth ??= XLib.XDisplayWidth(Display, Screen);
+	private int? _xDisplayWidth;
+
+	public int XDisplayHeight => _xDisplayHeight ??= XLib.XDisplayHeight(Display, Screen);
+	private int? _xDisplayHeight;
 
 	public XIDeviceInfo? PointerDevice { get; }
 

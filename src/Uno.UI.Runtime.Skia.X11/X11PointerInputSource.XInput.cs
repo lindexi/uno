@@ -6,6 +6,8 @@ using Windows.Devices.Input;
 using PointerDeviceType = Windows.Devices.Input.PointerDeviceType;
 using PointerEventArgs = Windows.UI.Core.PointerEventArgs;
 using static Microsoft.UI.Xaml.Controls.Primitives.LoopingSelectorItem;
+using System.Collections.Generic;
+using System.Globalization;
 
 namespace Uno.WinUI.Runtime.Skia.X11;
 
@@ -108,10 +110,90 @@ internal partial class X11PointerInputSource
 
 		var x = xiDeviceEvent->event_x;
 		var y = xiDeviceEvent->event_y;
+		var position = new Point(x / scale, y / scale);
+
+		if (X11DeviceInputManager is {} x11DeviceInputManager)
+		{
+			var valuatorDictionary = _cacheValuatorDictionary;
+			valuatorDictionary.Clear();
+
+			var values = xiDeviceEvent->valuators.Values;
+			for (var c = 0; c < xiDeviceEvent->valuators.MaskLen * 8; c++)
+			{
+				if (XLib.XIMaskIsSet(xiDeviceEvent->valuators.Mask, c))
+				{
+					valuatorDictionary[c] = *values;
+					values++;
+				}
+			}
+
+			float? pressure = null;
+
+			//double? physicalWidth = null;
+			//double? physicalHeight = null;
+
+			double? pixelWidth = null;
+			double? pixelHeight = null;
+
+			var touchMajorValuatorClassInfo = x11DeviceInputManager.TouchMajorValuatorClassInfo;
+			var touchMinorValuatorClassInfo = x11DeviceInputManager.TouchMinorValuatorClassInfo;
+			var pressureValuatorClassInfo = x11DeviceInputManager.PressureValuatorClassInfo;
+
+			foreach (var (key, value) in valuatorDictionary)
+			{
+				if (key == touchMajorValuatorClassInfo?.Number)
+				{
+					//physicalWidth = value / touchMajorValuatorClassInfo.Value.Resolution *
+					//                _infoManager.ScreenPhysicalWidthCentimetre;
+					pixelWidth = (value - touchMajorValuatorClassInfo.Value.Min) /
+					             (touchMajorValuatorClassInfo.Value.Max -
+					              touchMajorValuatorClassInfo.Value.Min) *
+					             x11DeviceInputManager.XDisplayWidth;
+				}
+				else if (key == touchMinorValuatorClassInfo?.Number)
+				{
+					//physicalHeight = value / touchMinorValuatorClassInfo.Value.Resolution *
+					//                 _infoManager.ScreenPhysicalHeightCentimetre;
+
+					pixelHeight = (value - touchMinorValuatorClassInfo.Value.Min) /
+					              (touchMinorValuatorClassInfo.Value.Max -
+					               touchMinorValuatorClassInfo.Value.Min) *
+					              x11DeviceInputManager.XDisplayHeight;
+				}
+				else if (key == pressureValuatorClassInfo?.Number)
+				{
+					var xiValuatorClassInfo = pressureValuatorClassInfo.Value;
+
+					pressure = (float)((value - xiValuatorClassInfo.Min) / (xiValuatorClassInfo.Max - xiValuatorClassInfo.Min));
+				}
+			}
+
+			if (pressure is not null)
+			{
+				properties.Pressure = pressure.Value;
+			}
+
+			if (pixelWidth != null || pixelHeight != null)
+			{
+				if (pixelWidth == null)
+				{
+					// 基本上不会进入此分支
+					pixelWidth = pixelHeight;
+				}
+
+				if (pixelHeight == null)
+				{
+					// 这是兼容实现的代码
+					pixelHeight = pixelWidth;
+				}
+
+				// 也许需要缩放一下？
+				properties.ContactRect = new Rect(position, new Size(pixelWidth!.Value, pixelHeight!.Value));
+			}
+		}
 
 		// Time is given in milliseconds since system boot
 		// This matches the format of WinUI. See also: https://github.com/unoplatform/uno/issues/14535
-		var position = new Point(x / scale, y / scale);
 		var point = new PointerPoint(
 			frameId: (uint)timestamp, // UNO TODO: How should set the frame, timestamp may overflow.
 			timestamp: (uint)timestamp,
@@ -144,4 +226,8 @@ internal partial class X11PointerInputSource
 			X11XamlRootHost.QueueAction(_host, () => RaisePointerReleased(pointerEventArgs));
 		}
 	}
+
+	public X11DeviceInputManager? X11DeviceInputManager { get; set; }
+
+	private readonly Dictionary<int, double> _cacheValuatorDictionary = new Dictionary<int, double>();
 }
