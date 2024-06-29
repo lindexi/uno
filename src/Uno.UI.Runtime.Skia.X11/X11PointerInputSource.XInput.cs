@@ -1,4 +1,5 @@
-﻿using Windows.Foundation;
+﻿using System;
+using Windows.Foundation;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Controls;
 using Uno.UI.Hosting;
@@ -91,6 +92,9 @@ internal partial class X11PointerInputSource
 		var state = (XModifierMask)xiDeviceEvent->mods.Effective;
 
 		var id = xiDeviceEvent->detail;
+
+		Console.WriteLine($"Dispatcher Id={id} X11DeviceInputManager != null={X11DeviceInputManager != null}");
+
 		if (isMouse)
 		{
 			// 由于在 XI_ButtonPress 时的 id 是 1 而 XI_Motion 是 0 导致无法画出线
