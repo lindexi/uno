@@ -71,6 +71,12 @@ internal static class FontDetailsCache
 			skTypeFace = GetDefaultTypeFace();
 		}
 
+		if (skTypeFace is null)
+		{
+			Console.WriteLine($"skTypeFace is null==============");
+			skTypeFace = null!;
+		}
+
 		Blob? GetTable(Face face, Tag tag)
 		{
 			var size = skTypeFace.GetTableSize(tag);
