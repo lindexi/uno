@@ -46,7 +46,7 @@ namespace Microsoft.UI.Xaml.Input
 			KeyModifiers = pointerEventArgs.KeyModifiers;
 			OriginalSource = source;
 		}
-		
+
 		public IList<PointerPoint> GetIntermediatePoints(UIElement relativeTo)
 		{
 #if HAS_UNO_WINUI

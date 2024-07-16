@@ -44,7 +44,7 @@ namespace Microsoft.UI.Xaml.Input
 		/// <inheritdoc />
 		global::Windows.UI.Input.PointerPoint CoreWindow.IPointerEventArgs.GetLocation(object relativeTo)
 			=> (global::Windows.UI.Input.PointerPoint)GetCurrentPoint(relativeTo as UIElement);
-		
+
 		internal uint FrameId { get; }
 
 		internal bool CanceledByDirectManipulation { get; set; }
