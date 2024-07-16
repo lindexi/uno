@@ -85,6 +85,12 @@ namespace Uno.WinUI.Runtime.Skia.X11
 		[LibraryImport(libX11)]
 		public static partial int XPending(IntPtr diplay);
 
+		[LibraryImport(libX11)]
+		public static partial int XEventsQueued(IntPtr display, int mode);
+
+		[LibraryImport(libX11)]
+		public static partial void XPeekEvent(IntPtr display, out XEvent xevent);
+
 		[DllImport(libX11)]
 		public static extern bool XQueryExtension(IntPtr display, [MarshalAs(UnmanagedType.LPStr)] string name,
 			out int majorOpcode, out int firstEvent, out int firstError);

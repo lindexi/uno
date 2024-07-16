@@ -253,7 +253,7 @@ internal partial class X11XamlRootHost
 										_pointerSource.X11DeviceInputManager = _x11DeviceInputManager;
 									}
 
-									_pointerSource?.DispatchMessage(xiDeviceEvent);
+									_pointerSource?.DispatchMessage(xiDeviceEvent, X11Window);
 								}
 							}
 							else if (xiEvent->evtype == XiEventType.XI_Enter)

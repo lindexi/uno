@@ -1,6 +1,5 @@
 ﻿using System;
 using Windows.Foundation;
-using Microsoft.UI.Input;
 using Microsoft.UI.Xaml.Controls;
 using Uno.UI.Hosting;
 using Windows.Devices.Input;
@@ -9,6 +8,7 @@ using PointerEventArgs = Windows.UI.Core.PointerEventArgs;
 using static Microsoft.UI.Xaml.Controls.Primitives.LoopingSelectorItem;
 using System.Collections.Generic;
 using System.Globalization;
+using Windows.UI.Input;
 
 namespace Uno.WinUI.Runtime.Skia.X11;
 
@@ -68,28 +68,91 @@ internal partial class X11PointerInputSource
 		return pointerEventArgs;
 	}
 
-	public unsafe void DispatchMessage(XIDeviceEvent* xiDeviceEvent)
+	public unsafe void DispatchMessage(XIDeviceEvent* xiDeviceEvent, X11Window x11Window)
+	{
+		var state = (XModifierMask)xiDeviceEvent->mods.Effective;
+
+		var (shouldIgnore, point) = ParsePointerPoint(xiDeviceEvent);
+		if (shouldIgnore)
+		{
+			return;
+		}
+
+		List<PointerPoint>? intermediatePoints = null;
+		if (IsMove(xiDeviceEvent->evtype))
+		{
+			// 在移动过程中，尝试读取历史点
+			intermediatePoints = TryReadIntermediatePoints(point, x11Window);
+
+			// 如果能读取到历史点，那当前点将需要更换为最后一个点
+			if (intermediatePoints is { Count: > 1 })
+			{
+				point = intermediatePoints[^1];
+			}
+		}
+
+		var modifiers = X11XamlRootHost.XModifierMaskToVirtualKeyModifiers(state);
+
+		var pointerEventArgs = new PointerEventArgs(point, modifiers, intermediatePoints);
+
+		var xiEvent = xiDeviceEvent;
+		if (xiEvent->evtype is XiEventType.XI_TouchBegin or XiEventType.XI_ButtonPress)
+		{
+			//OnDown(in deviceInputArgs);
+			X11XamlRootHost.QueueAction(_host, () => RaisePointerPressed(pointerEventArgs));
+		}
+		else if (xiEvent->evtype is XiEventType.XI_TouchUpdate or XiEventType.XI_Motion)
+		{
+			//Console.WriteLine($"Move={id} {stylusPoint.Point.X},{stylusPoint.Point.Y}");
+			//OnMove(in deviceInputArgs);
+			X11XamlRootHost.QueueAction(_host, () => RaisePointerMoved(pointerEventArgs));
+		}
+		else if (xiEvent->evtype is XiEventType.XI_TouchEnd or XiEventType.XI_ButtonRelease)
+		{
+			//OnUp(in deviceInputArgs);
+			X11XamlRootHost.QueueAction(_host, () => RaisePointerReleased(pointerEventArgs));
+		}
+	}
+
+	private bool IsMove(XiEventType eventType)
+	{
+		if (eventType is
+		    // 只有移动系的，才可以合并，其他的不能合并
+		    //XiEventType.XI_ButtonPress
+		    //or XiEventType.XI_ButtonRelease
+		    XiEventType.XI_Motion
+		    //or XiEventType.XI_TouchBegin
+		    or XiEventType.XI_TouchUpdate
+		    //or XiEventType.XI_TouchEnd
+		   )
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	private unsafe (bool ShouldIgnore, PointerPoint PointerPoint) ParsePointerPoint(XIDeviceEvent* xiDeviceEvent)
 	{
 		bool isMouse = false;
 
 		if (xiDeviceEvent->evtype is
-			XiEventType.XI_ButtonPress
-			or XiEventType.XI_ButtonRelease
-			or XiEventType.XI_Motion)
+		    XiEventType.XI_ButtonPress
+		    or XiEventType.XI_ButtonRelease
+		    or XiEventType.XI_Motion)
 		{
 			if ((xiDeviceEvent->flags & XiDeviceEventFlags.XIPointfocuserEmulated) ==
-				XiDeviceEventFlags.XIPointfocuserEmulated)
+			    XiDeviceEventFlags.XIPointfocuserEmulated)
 			{
 				// 多指触摸下是模拟的，则忽略
 				//Console.WriteLine("多指触摸下是模拟的");
-				return;
+				return (ShouldIgnore: true, PointerPoint: default!);
 			}
 
 			isMouse = true;
 		}
 
 		var timestamp = (ulong)xiDeviceEvent->time.ToInt64();
-		var state = (XModifierMask)xiDeviceEvent->mods.Effective;
 
 		var id = xiDeviceEvent->detail;
 
@@ -208,27 +271,68 @@ internal partial class X11PointerInputSource
 			false,
 			properties
 		);
-		var modifiers = X11XamlRootHost.XModifierMaskToVirtualKeyModifiers(state);
+		return (ShouldIgnore: false, PointerPoint: point);
+	}
 
-		var pointerEventArgs = new PointerEventArgs(point, modifiers);
+	private unsafe List<PointerPoint>? TryReadIntermediatePoints(PointerPoint currentPoint, X11Window x11Window)
+	{
+		var currentId = (int) currentPoint.PointerId;
 
-		var xiEvent = xiDeviceEvent;
-		if (xiEvent->evtype is XiEventType.XI_TouchBegin or XiEventType.XI_ButtonPress)
+		List<PointerPoint>? intermediatePoints = null;
+
+		var count = XLib.XEventsQueued(x11Window.Display, 0 /*QueuedAlready*/);
+		for (int i = 0; i < count; i++)
 		{
-			//OnDown(in deviceInputArgs);
-			X11XamlRootHost.QueueAction(_host, () => RaisePointerPressed(pointerEventArgs));
+			XLib.XPeekEvent(x11Window.Display, out var @event);
+			if (@event.type == XEventName.GenericEvent)
+			{
+				var data = &@event.GenericEventCookie;
+				XLib.XGetEventData(x11Window.Display, data);
+				try
+				{
+					var xiEvent = (XIEvent*)@event.GenericEventCookie.data;
+					if (IsMove(xiEvent->evtype))
+					{
+						var xiDeviceEvent = (XIDeviceEvent*)xiEvent;
+						var isSame = xiDeviceEvent->detail == currentId;
+						if (!isSame)
+						{
+							// 收到别的触摸点，出让，调度其他的事件
+							break;
+						}
+
+						var (shouldIgnore, point) = ParsePointerPoint(xiDeviceEvent);
+						if (!shouldIgnore)
+						{
+							if (intermediatePoints is null)
+							{
+								intermediatePoints = new List<PointerPoint>(2)
+								{
+									currentPoint
+								};
+							}
+							intermediatePoints.Add(point);
+						}
+
+						// 读走数据，用于下次读取到新的数据
+						XLib.XNextEvent(x11Window.Display, out _);
+
+						// 使用 continue 重新进入循环
+						continue;
+					}
+				}
+				finally
+				{
+					XLib.XFreeEventData(x11Window.Display, data);
+				}
+			}
+
+			// 不满足条件的，不能处理，返回给到外面，这里直接返回即可
+			// 所有符合条件都使用 continue 继续循环
+			return intermediatePoints;
 		}
-		else if (xiEvent->evtype is XiEventType.XI_TouchUpdate or XiEventType.XI_Motion)
-		{
-			//Console.WriteLine($"Move={id} {stylusPoint.Point.X},{stylusPoint.Point.Y}");
-			//OnMove(in deviceInputArgs);
-			X11XamlRootHost.QueueAction(_host, () => RaisePointerMoved(pointerEventArgs));
-		}
-		else if (xiEvent->evtype is XiEventType.XI_TouchEnd or XiEventType.XI_ButtonRelease)
-		{
-			//OnUp(in deviceInputArgs);
-			X11XamlRootHost.QueueAction(_host, () => RaisePointerReleased(pointerEventArgs));
-		}
+
+		return intermediatePoints;
 	}
 
 	public X11DeviceInputManager? X11DeviceInputManager { get; set; }
