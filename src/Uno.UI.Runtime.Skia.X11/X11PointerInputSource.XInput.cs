@@ -32,8 +32,10 @@ internal partial class X11PointerInputSource
 
 	private unsafe PointerEventArgs ToPointerEventArgs(XIEnterLeaveEvent* enterLeaveEvent)
 	{
-		var timestamp = (ulong)enterLeaveEvent->time.ToInt64();
 		var state = (XModifierMask)enterLeaveEvent->mods.Effective;
+		var modifiers = X11XamlRootHost.XModifierMaskToVirtualKeyModifiers(state);
+
+		var timestamp = (ulong)enterLeaveEvent->time.ToInt64();
 
 		var scale = ((IXamlRootHost)_host).RootElement?.XamlRoot is { } root
 			? root.RasterizationScale
@@ -41,8 +43,6 @@ internal partial class X11PointerInputSource
 		var x = enterLeaveEvent->event_x;
 		var y = enterLeaveEvent->event_y;
 		var position = new Point(x / scale, y / scale);
-
-		var modifiers = X11XamlRootHost.XModifierMaskToVirtualKeyModifiers(state);
 
 		var properties = new PointerPointProperties
 		{
@@ -105,7 +105,7 @@ internal partial class X11PointerInputSource
 		{
 			IsLeftButtonPressed = true,
 			IsMiddleButtonPressed = false,
-			IsRightButtonPressed = false
+			IsRightButtonPressed = false,
 		};
 
 		var scale = ((IXamlRootHost)_host).RootElement?.XamlRoot is { } root
@@ -208,6 +208,7 @@ internal partial class X11PointerInputSource
 			false,
 			properties
 		);
+		
 		var modifiers = X11XamlRootHost.XModifierMaskToVirtualKeyModifiers(state);
 
 		var pointerEventArgs = new PointerEventArgs(point, modifiers);
