@@ -99,18 +99,18 @@ internal partial class X11PointerInputSource
 		if (xiEvent->evtype is XiEventType.XI_TouchBegin or XiEventType.XI_ButtonPress)
 		{
 			//OnDown(in deviceInputArgs);
-			X11XamlRootHost.QueueAction(_host, () => RaisePointerPressed(pointerEventArgs));
+			X11XamlRootHost.RunAsync(_host, () => RaisePointerPressed(pointerEventArgs))?.GetResults();
 		}
 		else if (xiEvent->evtype is XiEventType.XI_TouchUpdate or XiEventType.XI_Motion)
 		{
 			//Console.WriteLine($"Move={id} {stylusPoint.Point.X},{stylusPoint.Point.Y}");
 			//OnMove(in deviceInputArgs);
-			X11XamlRootHost.QueueAction(_host, () => RaisePointerMoved(pointerEventArgs));
+			X11XamlRootHost.RunAsync(_host, () => RaisePointerMoved(pointerEventArgs))?.GetResults();
 		}
 		else if (xiEvent->evtype is XiEventType.XI_TouchEnd or XiEventType.XI_ButtonRelease)
 		{
 			//OnUp(in deviceInputArgs);
-			X11XamlRootHost.QueueAction(_host, () => RaisePointerReleased(pointerEventArgs));
+			X11XamlRootHost.RunAsync(_host, () => RaisePointerReleased(pointerEventArgs))?.GetResults();
 		}
 	}
 
