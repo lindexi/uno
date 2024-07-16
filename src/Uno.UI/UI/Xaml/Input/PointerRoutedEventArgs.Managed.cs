@@ -61,7 +61,7 @@ namespace Microsoft.UI.Xaml.Input
 				var result = new List<PointerPoint>(intermediatePoints.Count);
 				foreach (var intermediatePoint in intermediatePoints)
 				{
-					var point = new PointerPoint(intermediatePoint);
+					var point = new PointerPoint(intermediatePoint); // 这里将会浪费一个对象，好像这样的小对象对 GC 压力很小。在使用 At 方法时将会执行转换，创建新的对象，如此可以让代码简单
 					var absolutePosition = point.Position;
 					var relativePosition = generalTransform.TransformPoint(absolutePosition);
 					result.Add(point.At(relativePosition));
