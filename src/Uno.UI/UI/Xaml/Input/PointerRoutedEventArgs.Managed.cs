@@ -1,6 +1,7 @@
 ﻿#if UNO_HAS_MANAGED_POINTERS
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using Windows.Devices.Input;
@@ -44,6 +45,32 @@ namespace Microsoft.UI.Xaml.Input
 			Pointer = GetPointer(pointerEventArgs);
 			KeyModifiers = pointerEventArgs.KeyModifiers;
 			OriginalSource = source;
+		}
+		
+		public IList<PointerPoint> GetIntermediatePoints(UIElement relativeTo)
+		{
+#if HAS_UNO_WINUI
+			var intermediatePoints = _pointerEventArgs.GetIntermediatePoints();
+			if (relativeTo is null)
+			{
+				return intermediatePoints.Select(p => new PointerPoint(p)).ToList();
+			}
+			else
+			{
+				var generalTransform = relativeTo.TransformToVisual(null).Inverse;
+				var result = new List<PointerPoint>(intermediatePoints.Count);
+				foreach (var intermediatePoint in intermediatePoints)
+				{
+					var point = new PointerPoint(intermediatePoint);
+					var absolutePosition = point.Position;
+					var relativePosition = generalTransform.TransformPoint(absolutePosition);
+					result.Add(point.At(relativePosition));
+				}
+				return result;
+			}
+#else
+			return new List<PointerPoint>(1) { GetCurrentPoint(relativeTo) };
+#endif
 		}
 
 		public PointerPoint GetCurrentPoint(UIElement relativeTo)
