@@ -298,7 +298,9 @@ internal partial class X11XamlRootHost
 	}
 
 	public static void QueueAction(IXamlRootHost host, Action action)
-		=> RunAsync(host, action);
+	{
+	 	_ = RunAsync(host, action);
+	}
 
 	internal static IAsyncAction? RunAsync(IXamlRootHost host, Action action)
 		=> host.RootElement?.Dispatcher.RunAsync(CoreDispatcherPriority.High, new DispatchedHandler(action));
